@@ -2,7 +2,6 @@ import axios from 'axios';
 
 // Membuat instance axios dengan konfigurasi default
 const apiUrl = 'https://api-sso.lskk.co.id/v1/';
-const apiLocal = 'https://api-iot-log.lskk.co.id/v1';
 
 const apiClient = axios.create({
   baseURL: apiUrl,
@@ -10,12 +9,7 @@ const apiClient = axios.create({
     'Content-Type': 'application/json',
   },
 });
-const apiAdmin = axios.create({
-  baseURL: apiLocal,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+
 
 const guidAplication = 'PROJECT-fc2ded7c-d7fe-4945-8c49-e6528d2f075f-2024'
 
@@ -111,23 +105,14 @@ export const register = (data) => {
   });
 };
 
-export const getAllReportsByCompany= async (queryParams) => {
+export const getAllCompanies= async () => {
   try {
-    const response = await apiAdmin.get('/reports/company', { 
-      params: {
-        companyGuid: 'COMPANY-0a3a303e-7dd0-4246-ad21-d675e77904b4-2024'.companyGuid, // GUID perusahaan
-        type: queryParams.type,               // Tipe report
-      }
-    });
-    // console.log('Get All Reports by Company Response:', response.data);
-    return response.data;
+    const response = await apiClient.get('/companies');
+    // console.log('Get All Companies Response:', response.data); // Log the response data
+    return response.data?.data || []; // Access and return the companies array, default to empty array
   } catch (error) {
-    if (error.response?.status === 401) {
-      console.error('Unauthorized access. Please log in again.');
-    } else {
-      console.error('Error fetching reports:', error);
-    }
-    throw error;
+    console.error('Error fetching companies:', error);
+    throw new Error(error.response?.data?.message || 'Failed to fetch companies');
   }
 };
 
@@ -186,9 +171,9 @@ export const getUserProfile = async () => {
       const response = await apiClient.post(
         '/users/edit-profile',
         {
-          name: profileData.name,  // Changed from newName to name
-          phoneNumber: profileData.phoneNumber,  // Changed from newPhoneNumber to phoneNumber
-          address: profileData.address || ''  // Keep this as is
+          newName: profileData.name,
+          newPhoneNumber: profileData.phoneNumber,
+          newAddress: profileData.address || '' // Kirimkan alamat kosong jika tidak ada
         }
       );
       return response.data;

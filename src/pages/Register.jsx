@@ -1,16 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
-import { register, getAllReportsByCompany } from '../services/apiservice';
+import { register, getAllCompanies } from '../services/apiservice';
 
 export default function Register() {
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
-    const [deviceData, setDeviceData] = useState({ companyGuid: '' }); // Initialize deviceData state
-    const [companies, setCompanies] = useState([]); // Assuming you fetch companies somewhere
+    const [deviceData, setDeviceData] = useState({ companyGuid: '' });
+    const [companies, setCompanies] = useState([]);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchCompanies = async () => {
+            try {
+                const companyList = await getAllCompanies();
+                setCompanies(companyList);
+            } catch (error) {
+                console.error('Failed to fetch companies:', error);
+                setErrorMessage('Gagal memuat data perusahaan.');
+            }
+        };
+
+        fetchCompanies();
+    }, []);
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -34,15 +48,13 @@ export default function Register() {
             name: formData.get('fullName'),
             guidAplication: 'PROJECT-fc2ded7c-d7fe-4945-8c49-e6528d2f075f-2024',
             role: 'warga',
-            companyGuid: deviceData.companyGuid || 'COMPANY-0a3a303e-7dd0-4246-ad21-d675e77904b4-2024', // Use deviceData
+            companyGuid: deviceData.companyGuid,
         };
 
         try {
             const response = await register(data);
-
             if (response.data && response.data.success) {
                 setSuccessMessage('Registrasi berhasil! OTP akan dikirim ke email Anda.');
-
                 setTimeout(() => {
                     navigate('/activateaccountform');
                 }, 3000);

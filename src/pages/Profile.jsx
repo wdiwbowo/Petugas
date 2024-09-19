@@ -14,7 +14,8 @@ export default function UserProfile() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false); // State for success message
 
   const navigate = useNavigate();
 
@@ -40,7 +41,11 @@ export default function UserProfile() {
   }, []);
 
   const handleEditProfile = () => {
-    setIsModalOpen(true); // Open the modal
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
   };
 
   const handleUpdateProfile = async (updatedUser) => {
@@ -56,9 +61,20 @@ export default function UserProfile() {
         phone: response.phoneNumber,
         address: response.address,
       }));
+
+      // Tampilkan pesan sukses
+      setShowSuccessMessage(true);
+
+      // Reload halaman setelah 2 detik
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+        window.location.reload();
+      }, 2000);
+
+      handleModalClose(); // Tutup modal setelah update
     } catch (error) {
       console.error("Failed to update profile:", error.response ? error.response.data : error.message);
-      // Handle error (e.g., show a message to the user)
+      // Handle error (e.g., tampilkan pesan kepada pengguna)
     }
   };
 
@@ -110,13 +126,22 @@ export default function UserProfile() {
             <ChevronRightIcon className="w-5 h-5 ml-2" />
           </button>
         </div>
+
+        {/* Pesan sukses */}
+        {showSuccessMessage && (
+          <div className="mt-4 text-green-500 text-center">
+            Profil berhasil diperbarui!
+          </div>
+        )}
       </div>
-      <ModalEditProfile 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        user={user} 
-        onUpdate={handleUpdateProfile} 
-      />
+      {isModalOpen && (
+        <ModalEditProfile
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+          user={user} // Pass the correct user data
+          onUpdate={handleUpdateProfile} // Pass the update function
+        />
+      )}
     </div>
   );
 }
