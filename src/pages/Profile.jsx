@@ -1,29 +1,68 @@
-import React, { useState } from 'react';
-import { ChevronRightIcon } from '@heroicons/react/24/solid'; // Pastikan Heroicons diinstall
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import React, { useState, useEffect } from 'react';
+import { ChevronRightIcon } from '@heroicons/react/24/solid'; // Ensure Heroicons is installed
+import { useNavigate } from 'react-router-dom';
+import { getUserProfile } from '../services/apiservice'; // Import the getUserProfile function
 
 export default function UserProfile() {
   const [user, setUser] = useState({
-    name: "John Doe",
-    email: "john.doe@example.com",
-    phone: "+1234567890",
-    address: "123 Main St, Hometown, USA",
-    profileImage: "https://via.placeholder.com/150" // Ganti dengan URL gambar profil sebenarnya
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    profileImage: ''
   });
+  const [loading, setLoading] = useState(true); // To manage loading state
+  const [error, setError] = useState(null); // To manage error state
 
-  const navigate = useNavigate(); // Inisialisasi useNavigate
+  const navigate = useNavigate(); // Initialize useNavigate
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const userProfile = await getUserProfile(); // Fetch user profile from API
+        setUser({
+          name: userProfile.data.user.name || "Unknown",  // Add fallback values
+          email: userProfile.data.user.email || "Email not available",
+          phone: userProfile.data.user.phoneNumber || "Phone number not available",
+          address: userProfile.data.user.address || "Address not available",
+          profileImage: userProfile.profileImage || "https://via.placeholder.com/150", // Fallback image
+        });
+      } catch (error) {
+        setError(error.message); // Handle any errors
+      } finally {
+        setLoading(false); // Stop loading after the request
+      }
+    };
+
+    fetchUserProfile(); // Fetch data on component mount
+  }, []);
 
   const handleEditProfile = () => {
-    // Logic untuk mengedit profil
+    // Logic to handle profile edit
   };
 
   const handleUpdatePassword = () => {
-    // Logic untuk memperbarui password
+    // Logic to handle password update
   };
 
   const handleContinue = () => {
-    navigate('/laporan'); // Arahkan ke halaman laporan
+    navigate('/laporan'); // Navigate to laporan page
   };
+
+  if (loading) {
+    return <div>Loading...</div>; // Show loading while data is being fetched
+  }
+
+  if (loading) {
+    return (
+        <div className="flex items-center justify-center min-h-screen bg-gray-700">
+            <div className="text-center">
+                <div className="loader mb-4 animate-spin rounded-full h-16 w-16 border-t-4 border-yellow-500"></div>
+                <p className="text-yellow-400 text-2xl font-bold">Sedang Memuat...</p>
+            </div>
+        </div>
+    );
+}
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-gray-800 flex items-center justify-center">

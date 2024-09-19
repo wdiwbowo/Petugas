@@ -6,6 +6,7 @@ import LupaPassword from "./pages/LupaPassword";
 import Profile from "./pages/Profile";
 import Laporan from "./pages/Laporan";
 import Presensi from "./pages/Presensi";
+import ActivateAccountForm from "./pages/ActivateAccountForm";
 
 export const router = createBrowserRouter([
     { path: '/', element: <App /> },
@@ -15,4 +16,5 @@ export const router = createBrowserRouter([
     { path: '/profile', element: <Profile /> },
     { path: '/laporan', element: <Laporan /> },
     { path: '/presensi', element: <Presensi /> },
+    { path: '/activateAccountForm', element: <ActivateAccountForm /> },
 ])
