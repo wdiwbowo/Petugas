@@ -1,9 +1,16 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { ChevronRightIcon } from '@heroicons/react/24/solid'; // Pastikan Heroicons diinstall
+import { Link, useNavigate } from "react-router-dom"; // Import useNavigate for redirection
+import { ChevronRightIcon } from '@heroicons/react/24/solid'; // Ensure Heroicons is installed
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate(); // Hook to programmatically navigate
+
+  const handleLogout = () => {
+    // Add your logout logic here (e.g., clearing tokens, making API call)
+    // Then redirect to the login page or home page
+    navigate("/login"); // Redirect after logout
+  };
 
   return (
     <nav className="bg-gradient-to-b from-black via-gray-900 to-gray-800">
@@ -12,7 +19,7 @@ export default function Navbar() {
           {/* Logo and mobile menu button */}
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              {/* Logo bisa ditambahkan di sini */}
+              {/* Logo can be added here */}
             </div>
             {/* Mobile menu button */}
             <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
@@ -77,6 +84,12 @@ export default function Navbar() {
               >
                 Profile
               </Link>
+              <button
+                onClick={handleLogout}
+                className="rounded-md px-3 py-2 text-sm font-medium text-yellow-300 hover:bg-yellow-600 hover:text-gray-900"
+              >
+                Logout
+              </button>
             </div>
           </div>
         </div>
@@ -128,6 +141,12 @@ export default function Navbar() {
           >
             Profile
           </Link>
+          <button
+            onClick={handleLogout}
+            className="block w-full text-left text-yellow-300 text-lg font-medium py-4 px-2 hover:bg-yellow-600 transition duration-200"
+          >
+            Logout
+          </button>
         </div>
       </div>
     </nav>

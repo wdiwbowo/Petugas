@@ -151,3 +151,48 @@ export const getUserProfile = async () => {
       }
     }
   };
+
+  export const updateUserProfile = async (profileData) => {
+    try {
+      const response = await apiClient.post(
+        '/users/edit-profile',
+        {
+          name: profileData.name,  // Changed from newName to name
+          phoneNumber: profileData.phoneNumber,  // Changed from newPhoneNumber to phoneNumber
+          address: profileData.address || ''  // Keep this as is
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      throw error;
+    }
+  };
+  
+  export const updatePassword = async (email, currentPassword, newPassword) => {
+    try {
+      const response = await apiClient.post('/users/edit-password', {
+        email,
+        currentPassword,
+        newPassword
+      });
+  
+      if (response.data && response.data.success) {
+        return {
+          success: true,
+          message: 'Password updated successfully.',
+          data: response.data
+        };
+      } else {
+        return {
+          success: false,
+          message: response.data.message || 'Failed to update password.'
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'An error occurred while updating the password.'
+      };
+    }
+  };

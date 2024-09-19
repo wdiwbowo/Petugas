@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import AddPresensiModal from '../components/presensi/AddPresensiModal';
 
 const dummyPresensiData = [
-    { id: 1, nama: 'John Doe', tanggal: '2024-09-01', status: 'Hadir' },
-    { id: 2, nama: 'Jane Smith', tanggal: '2024-09-02', status: 'Terlambat' },
-    { id: 3, nama: 'Alice Johnson', tanggal: '2024-09-03', status: 'Hadir' },
-    { id: 4, nama: 'Bob Brown', tanggal: '2024-09-04', status: 'Absen' },
-    { id: 5, nama: 'Bob Brown', tanggal: '2024-09-04', status: 'Absen' },
+    { id: 1, nama: 'John Doe', isiPresensi: 'Had a great day!', imgUrl: 'https://via.placeholder.com/100' },
+    { id: 2, nama: 'Jane Smith', isiPresensi: 'Was late due to traffic.', imgUrl: 'https://via.placeholder.com/100' },
+    { id: 3, nama: 'Alice Johnson', isiPresensi: 'On time.', imgUrl: 'https://via.placeholder.com/100' },
+    { id: 4, nama: 'Bob Brown', isiPresensi: 'Absent.', imgUrl: 'https://via.placeholder.com/100' },
 ];
 
 const Presensi = () => {
@@ -15,14 +15,15 @@ const Presensi = () => {
     const [loading, setLoading] = useState(true);
     const [filterText, setFilterText] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(5); // Jumlah item per halaman
+    const [itemsPerPage] = useState(5);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchPresensiData = () => {
             setTimeout(() => {
                 setPresensiData(dummyPresensiData);
                 setLoading(false);
-            }, 1000); // Simulasi delay API 1 detik
+            }, 1000);
         };
 
         fetchPresensiData();
@@ -32,30 +33,31 @@ const Presensi = () => {
         item.nama.toLowerCase().includes(filterText.toLowerCase())
     );
 
-    // Pagination
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = filteredPresensiData.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(filteredPresensiData.length / itemsPerPage);
 
     const handlePageChange = (newPage) => {
-        if (newPage > 0 && newPage <= totalPages) {
+        if (newPage >= 1 && newPage <= totalPages) {
             setCurrentPage(newPage);
         }
     };
 
     const handleAdd = () => {
-        setShowAddModal(true);
+        setIsModalOpen(true);
     };
 
     const handleEdit = (id) => {
         console.log(`Edit item with id: ${id}`);
-        // Tambahkan fungsionalitas edit di sini
     };
 
     const handleDelete = (id) => {
-        console.log(`Delete item with id: ${id}`);
         setPresensiData(presensiData.filter(item => item.id !== id));
+    };
+
+    const handleModalClose = () => {
+        setIsModalOpen(false);
     };
 
     if (loading) {
@@ -89,7 +91,7 @@ const Presensi = () => {
                     <div className="px-6 mb-4">
                         <input
                             type="text"
-                            placeholder="Cari berdasarkan nama..."
+                            placeholder="Cari berdasarkan nama reporter..."
                             className="w-full px-4 py-2 rounded-lg bg-gray-700 text-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-500"
                             value={filterText}
                             onChange={(e) => setFilterText(e.target.value)}
@@ -102,8 +104,8 @@ const Presensi = () => {
                                 <tr>
                                     <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">No</th>
                                     <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Nama</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Tanggal</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Isi Presensi</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Img</th>
                                     <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
@@ -112,8 +114,10 @@ const Presensi = () => {
                                     <tr key={item.id} className="hover:bg-yellow-600 hover:text-gray-900 transition duration-300">
                                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-400">{index + 1 + indexOfFirstItem}</td>
                                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-100">{item.nama}</td>
-                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-400">{item.tanggal}</td>
-                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-400">{item.status}</td>
+                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-100">{item.isiPresensi}</td>
+                                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-100">
+                                            <img src={item.imgUrl} alt="Report" className="h-10 w-10 rounded" />
+                                        </td>
                                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-400 flex items-center space-x-2">
                                             <button
                                                 onClick={() => handleEdit(item.id)}
@@ -148,7 +152,7 @@ const Presensi = () => {
                                 <button
                                     key={page}
                                     onClick={() => handlePageChange(page)}
-                                    className={`text-white font-bold py-2 px-4 rounded ${currentPage === page ? 'bg-yellow-500' : 'bg-gray-500 hover:bg-gray-600'} transition duration-300`}
+                                    className={`text-white font-bold py-2 px-4 rounded ${currentPage === page ? 'bg-yellow-500' : 'bg-gray-500 hover:bg-gray-600'} `}
                                 >
                                     {page}
                                 </button>
@@ -164,6 +168,18 @@ const Presensi = () => {
                     </div>
                 </div>
             </main>
+
+            {/* Modal Add Presensi */}
+            {isModalOpen && (
+                <AddPresensiModal
+                    isOpen={isModalOpen}
+                    onClose={handleModalClose}
+                    onAdd={(newPresensi) => {
+                        setPresensiData([...presensiData, newPresensi]);
+                        handleModalClose();
+                    }}
+                />
+            )}
         </div>
     );
 };
