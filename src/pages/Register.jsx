@@ -1,14 +1,21 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
-import { register } from '../services/apiservice'; // Assuming register also handles OTP sending
+import { register, getAllReportsByCompany } from '../services/apiservice';
 
 export default function Register() {
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const [deviceData, setDeviceData] = useState({ companyGuid: '' }); // Initialize deviceData state
+    const [companies, setCompanies] = useState([]); // Assuming you fetch companies somewhere
     const navigate = useNavigate();
+
+    const handleChange = (event) => {
+        const { name, value } = event.target;
+        setDeviceData((prevData) => ({ ...prevData, [name]: value }));
+    };
 
     const handleRegister = async (event) => {
         event.preventDefault();
@@ -27,7 +34,7 @@ export default function Register() {
             name: formData.get('fullName'),
             guidAplication: 'PROJECT-fc2ded7c-d7fe-4945-8c49-e6528d2f075f-2024',
             role: 'warga',
-            companyGuid: uniqueCompanyGuid,
+            companyGuid: deviceData.companyGuid || 'COMPANY-0a3a303e-7dd0-4246-ad21-d675e77904b4-2024', // Use deviceData
         };
 
         try {
@@ -36,10 +43,9 @@ export default function Register() {
             if (response.data && response.data.success) {
                 setSuccessMessage('Registrasi berhasil! OTP akan dikirim ke email Anda.');
 
-                // OTP sending happens within the same `register` API
                 setTimeout(() => {
                     navigate('/activateaccountform');
-                }, 3000); // Delay before navigating to OTP page
+                }, 3000);
             } else {
                 setErrorMessage(response.data.message || 'Pendaftaran gagal, silakan coba lagi.');
             }
@@ -78,24 +84,17 @@ export default function Register() {
                                 Asal Instansi
                             </label>
                             <select
-                                name="institution"
-                                id="institution"
-                                className="block w-full px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                                required
+                                name="companyGuid"
+                                value={deviceData.companyGuid}
+                                onChange={handleChange}
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                             >
-                                <option value="">Asal Instansi</option>
-                                <option value="COMPANY-0a3a303e-7dd0-4246-ad21-d675e77904b4-2024">PT. LSKK</option>
-                                <option value="Software Kreatife Indonesia">Software Kreatife Indonesia</option>
-                                <option value="PPTIK ITB">PPTIK ITB</option>
-                                <option value="PUSTEKHAN ITB">PUSTEKHAN ITB</option>
-                                <option value="Universitas Bandar Lampung (UBL)">Universitas Bandar Lampung (UBL)</option>
-                                <option value="Institut Teknologi Garut(ITG)">Institut Teknologi Garut(ITG)</option>
-                                <option value="Universitas Sangga Buana">Universitas Sangga Buana</option>
-                                <option value="Universitas Sriwijaya">Universitas Sriwijaya</option>
-                                <option value="FK Universitas Sriwijaya">FK Universitas Sriwijaya</option>
-                                <option value="Universitas Widyatama">Universitas Widyatama</option>
-                                <option value="FIK Universitas Bandar Lampung">FIK Universitas Bandar Lampung</option>
-                                <option value="Telkom Indonesia">Telkom Indonesia</option>
+                                <option value="">Select company</option>
+                                {companies.map(company => (
+                                    <option key={company.guid} value={company.guid}>
+                                        {company.name}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 

@@ -1,8 +1,17 @@
 import axios from 'axios';
 
 // Membuat instance axios dengan konfigurasi default
+const apiUrl = 'https://api-sso.lskk.co.id/v1/';
+const apiLocal = 'https://api-iot-log.lskk.co.id/v1';
+
 const apiClient = axios.create({
-  baseURL: 'https://api-sso.lskk.co.id/v1/',
+  baseURL: apiUrl,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+const apiAdmin = axios.create({
+  baseURL: apiLocal,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -100,6 +109,26 @@ export const register = (data) => {
       'Content-Type': 'application/json',
     },
   });
+};
+
+export const getAllReportsByCompany= async (queryParams) => {
+  try {
+    const response = await apiAdmin.get('/reports/company', { 
+      params: {
+        companyGuid: 'COMPANY-0a3a303e-7dd0-4246-ad21-d675e77904b4-2024'.companyGuid, // GUID perusahaan
+        type: queryParams.type,               // Tipe report
+      }
+    });
+    // console.log('Get All Reports by Company Response:', response.data);
+    return response.data;
+  } catch (error) {
+    if (error.response?.status === 401) {
+      console.error('Unauthorized access. Please log in again.');
+    } else {
+      console.error('Error fetching reports:', error);
+    }
+    throw error;
+  }
 };
 
 // Fungsi logout

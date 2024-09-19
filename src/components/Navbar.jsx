@@ -1,16 +1,17 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom"; // Import useNavigate for redirection
-import { ChevronRightIcon } from '@heroicons/react/24/solid'; // Ensure Heroicons is installed
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate(); // Hook to programmatically navigate
 
   const handleLogout = () => {
-    // Add your logout logic here (e.g., clearing tokens, making API call)
-    // Then redirect to the login page or home page
-    navigate("/login"); // Redirect after logout
+    localStorage.removeItem('userToken');
+    console.log('User logged out successfully. Token removed.');
+    
+    navigate("/login");
   };
+  
 
   return (
     <nav className="bg-gradient-to-b from-black via-gray-900 to-gray-800">
