@@ -2,6 +2,7 @@ import axios from 'axios';
 
 // Membuat instance axios dengan konfigurasi default
 const apiUrl = 'https://api-sso.lskk.co.id/v1/';
+const api = 'https://api-iot-log.lskk.co.id/v1';
 
 const apiClient = axios.create({
   baseURL: apiUrl,
@@ -9,9 +10,15 @@ const apiClient = axios.create({
     'Content-Type': 'application/json',
   },
 });
+const apiAdminFile = axios.create({
+  baseURL: api,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 
-const guidAplication = 'PROJECT-fc2ded7c-d7fe-4945-8c49-e6528d2f075f-2024'
+const guidAplication = 'PROJECT-519391a1-bff6-4e8c-a854-bed3984cc0bb-2024'
 
 // Menambahkan interceptor untuk menyertakan token atau menangani kesalahan
 apiClient.interceptors.request.use(
@@ -22,6 +29,17 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     } else {
       console.warn('No token found in local storage');
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+apiAdminFile.interceptors.request.use(
+  (config) => {
+    const appToken = localStorage.getItem('appToken');
+    if (appToken) {
+      config.headers.Authorization = `Bearer ${appToken}`;
     }
     return config;
   },
@@ -210,3 +228,52 @@ export const getUserProfile = async () => {
       };
     }
   };
+
+  export const forgotPassword = async (email) => {
+    try {
+      const response = await apiClient.post('/users/forgot-password', { email });
+      return response.data;
+    } catch (error) {
+      handleErrorResponse(error);
+      throw error;
+    }
+  };
+
+  export const addReport = async (formData) => {
+    try {
+        const appToken = localStorage.getItem('appToken'); // Get the appToken from localStorage
+        const response = await apiAdminFile.post('/reports/create', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Authorization': `Bearer ${appToken}` // Use appToken here
+            }
+        });
+        return response.data; // Ensure you return the response data directly
+    } catch (error) {
+        console.error('Error adding report:', error); // Log the error
+        throw new Error(error.response?.data?.message || "Failed to add report");
+    }
+};
+
+
+// Fungsi untuk mengambil laporan petugas (officer reports)
+export const getPetugasReports = async (queryParams) => {
+  try {
+    const response = await apiAdminFile.get('/reports/officer', {
+      params: {
+        companyGuid: queryParams.companyGuid, // GUID perusahaan
+        type: queryParams.type, 
+        startDate: queryParams.startDate, // Optional start date filter
+        endDate: queryParams.endDate, // Optional end date filter
+        limit: queryParams.limit || 5, // Optional limit, default to 10
+        page: queryParams.page || 1 // Optional page number, default to 1
+      },
+    });
+    console.log('Get All Reports by Company Response:', response.data);
+    return response.data; // Assuming the response contains the data for the reports
+  } catch (error) {
+    console.error('Error fetching officer reports:', error);
+    throw new Error(error.response?.data?.message || 'Failed to fetch officer reports');
+  }
+};
+

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import InputMask from 'react-input-mask';
 import { updateUserProfile } from '../../services/apiservice';
 
 export default function ModalEditProfile({ isOpen, onClose, user, onUpdate }) {
   const [name, setName] = useState(user.name);
   const [email] = useState(user.email); // Keep email read-only
-  const [phone, setPhone] = useState(user.phoneNumber); // Use 'phone' as state
+  const [phoneNumber, setPhoneNumber] = useState(user.phone); // Use 'phoneNumber' for state
   const [address, setAddress] = useState(user.address);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -17,7 +18,7 @@ export default function ModalEditProfile({ isOpen, onClose, user, onUpdate }) {
     try {
       const updatedUser = {
         name,
-        phoneNumber: phone, // Corrected to use 'phone' state
+        phoneNumber, // Use 'phoneNumber' for the API call
         address,
       };
       
@@ -61,10 +62,10 @@ export default function ModalEditProfile({ isOpen, onClose, user, onUpdate }) {
           </div>
           <div className="mb-4">
             <label className="block text-gray-700">Nomor Telepon</label>
-            <input
-              type="text"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)} // Correct state update for 'phone'
+            <InputMask
+              mask="(999) 999-9999"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)} // Update state correctly
               className="border rounded w-full px-3 py-2"
               required
             />

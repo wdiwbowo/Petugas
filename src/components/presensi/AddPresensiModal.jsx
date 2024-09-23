@@ -5,7 +5,10 @@ const AddPresensi = ({ isOpen, onClose, onSubmit }) => {
     const [file, setFile] = useState(null);
     const [latitude, setLatitude] = useState(null);
     const [longitude, setLongitude] = useState(null);
-    const [reporterName, setReporterName] = useState('New Reporter'); // Change this as needed
+    const [reporterName] = useState("TNWK"); // Ubah jika perlu
+    const [companyGuid] = useState("COMPANY-9a01d431-dfe6-48c2-ae5a-6d0177fd2e19-2024");
+    const [reporterGuid] = useState("USER-ce78b8f0-9b65-408b-9be5-bf94ec7ce068-2024");
+    const [type] = useState("Presensi"); 
 
     useEffect(() => {
         if (isOpen) {
@@ -25,7 +28,7 @@ const AddPresensi = ({ isOpen, onClose, onSubmit }) => {
                 alert('Geolocation tidak didukung oleh browser ini.');
             }
         }
-    }, [isOpen]); // Hanya dijalankan saat modal dibuka (isOpen true)
+    }, [isOpen]);
 
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
@@ -40,11 +43,14 @@ const AddPresensi = ({ isOpen, onClose, onSubmit }) => {
 
         const newPresensi = {
             id: Date.now(),
-            nama: reporterName,
             isiPresensi: presensiContent,
             imgUrl: URL.createObjectURL(file), // Untuk preview lokal
             latitude,
             longitude,
+            type, // Menggunakan tipe default "Presensi"
+            companyGuid,
+            reporterName,
+            reporterGuid,
         };
 
         // Kirim data presensi ke parent component
@@ -80,16 +86,6 @@ const AddPresensi = ({ isOpen, onClose, onSubmit }) => {
                             type="file"
                             onChange={handleFileChange}
                             className="w-full px-4 py-2 border border-gray-600 bg-gray-900 text-gray-100 rounded-md"
-                            required
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-200">Nama Reporter</label>
-                        <input
-                            type="text"
-                            value={reporterName}
-                            onChange={(e) => setReporterName(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-gray-100 rounded-md"
                             required
                         />
                     </div>

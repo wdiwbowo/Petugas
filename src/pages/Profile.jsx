@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronRightIcon } from '@heroicons/react/24/solid';
 import { useNavigate } from 'react-router-dom';
-import { getUserProfile, updateUserProfile } from '../services/apiservice';
+import { getUserProfile, updateUserProfile, updatePassword } from '../services/apiservice';
 import ModalEditProfile from '../components/profile/ModalEditProfile';
+import ModalUpdatePassword from '../components/profile/ModalUpdatePassword'; // Import the password modal
 
 export default function UserProfile() {
   const [user, setUser] = useState({
@@ -15,7 +16,8 @@ export default function UserProfile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false); // State for success message
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false); // State for password modal
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const navigate = useNavigate();
 
@@ -62,24 +64,28 @@ export default function UserProfile() {
         address: response.address,
       }));
 
-      // Tampilkan pesan sukses
+      // Show success message
       setShowSuccessMessage(true);
 
-      // Reload halaman setelah 2 detik
+      // Reload page after 2 seconds
       setTimeout(() => {
         setShowSuccessMessage(false);
         window.location.reload();
       }, 2000);
 
-      handleModalClose(); // Tutup modal setelah update
+      handleModalClose();
     } catch (error) {
       console.error("Failed to update profile:", error.response ? error.response.data : error.message);
-      // Handle error (e.g., tampilkan pesan kepada pengguna)
     }
   };
 
-  const handleUpdatePassword = () => {
-    // Logic to handle password update
+  const handleUpdatePassword = async (currentPassword, newPassword) => {
+    try {
+      const response = await updatePassword(user.email, currentPassword, newPassword);
+      return response; // Return the response for handling in the modal
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
   };
 
   const handleContinue = () => {
@@ -87,8 +93,15 @@ export default function UserProfile() {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
-  }
+    return (
+        <div className="flex items-center justify-center min-h-screen bg-gray-700">
+            <div className="text-center">
+                <div className="loader mb-4 animate-spin rounded-full h-16 w-16 border-t-4 border-yellow-500"></div>
+                <p className="text-yellow-400 text-2xl font-bold">Sedang Memuat...</p>
+            </div>
+        </div>
+    );
+}
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-gray-800 flex items-center justify-center">
@@ -112,7 +125,7 @@ export default function UserProfile() {
               Edit Profil
             </button>
             <button
-              onClick={handleUpdatePassword}
+              onClick={() => setIsPasswordModalOpen(true)} // Open password modal
               className="bg-yellow-400 text-black py-2 px-4 rounded-lg font-semibold hover:bg-yellow-500 transition duration-200"
             >
               Update Password
@@ -127,7 +140,7 @@ export default function UserProfile() {
           </button>
         </div>
 
-        {/* Pesan sukses */}
+        {/* Success message */}
         {showSuccessMessage && (
           <div className="mt-4 text-green-500 text-center">
             Profil berhasil diperbarui!
@@ -138,8 +151,15 @@ export default function UserProfile() {
         <ModalEditProfile
           isOpen={isModalOpen}
           onClose={handleModalClose}
-          user={user} // Pass the correct user data
-          onUpdate={handleUpdateProfile} // Pass the update function
+          user={user}
+          onUpdate={handleUpdateProfile}
+        />
+      )}
+      {isPasswordModalOpen && (
+        <ModalUpdatePassword
+          isOpen={isPasswordModalOpen}
+          onClose={() => setIsPasswordModalOpen(false)}
+          onUpdate={handleUpdatePassword} // Pass the update password function
         />
       )}
     </div>

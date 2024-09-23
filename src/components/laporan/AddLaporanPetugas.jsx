@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from 'react';
+import { addReport } from '../../services/apiservice';
+import { v4 as uuidv4 } from 'uuid';
 
 const AddLaporanPetugas = ({ isOpen, onClose, onSubmit }) => {
     const [reportContent, setReportContent] = useState('');
     const [file, setFile] = useState(null);
     const [latitude, setLatitude] = useState(null);
     const [longitude, setLongitude] = useState(null);
-    const [type, setType] = useState('Officer');
+    const [type, setType] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [guid] = useState(() => uuidv4());
+    const [companyGuid] = useState("COMPANY-9a01d431-dfe6-48c2-ae5a-6d0177fd2e19-2024");
+    const [reporterName] = useState("TNWK");
+    const [reporterGuid] = useState("USER-ce78b8f0-9b65-408b-9be5-bf94ec7ce068-2024");
 
     useEffect(() => {
         if (isOpen) {
@@ -14,7 +22,6 @@ const AddLaporanPetugas = ({ isOpen, onClose, onSubmit }) => {
                     (position) => {
                         setLatitude(position.coords.latitude);
                         setLongitude(position.coords.longitude);
-                        console.log('Lokasi didapatkan: ', position.coords);
                     },
                     (error) => {
                         console.error('Error fetching location:', error);
@@ -25,44 +32,64 @@ const AddLaporanPetugas = ({ isOpen, onClose, onSubmit }) => {
                 alert('Geolocation tidak didukung oleh browser ini.');
             }
         }
-    }, [isOpen]); // Hanya dijalankan saat modal dibuka (isOpen true)
+    }, [isOpen]);
 
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
+        setLoading(true);
+    
         if (!latitude || !longitude) {
             alert('Lokasi belum tersedia, silakan coba lagi.');
+            setLoading(false);
             return;
         }
-
-        const newLaporan = {
-            id: Date.now(),
-            nama: 'New Officer', // Ganti dengan nama petugas jika perlu
-            isiLaporan: reportContent,
-            imgUrl: URL.createObjectURL(file), // Untuk preview lokal
-            latitude,
-            longitude,
-            type
-        };
-
-        // Kirim data laporan ke parent component
-        onSubmit(newLaporan);
-
-        // Reset form setelah pengiriman
-        setReportContent('');
-        setFile(null);
-        setLatitude(null);
-        setLongitude(null);
-        onClose(); // Tutup modal setelah pengiriman
-    };
-
+        if (!type) {
+            alert('Silakan pilih tipe laporan.');
+            setLoading(false);
+            return;
+        }
+    
+        const formData = new FormData();
+        formData.append('reportContent', reportContent);
+        formData.append('file', file);
+        formData.append('latitude', latitude);
+        formData.append('longitude', longitude);
+        formData.append('type', type);
+        formData.append('companyGuid', companyGuid);
+        formData.append('reporterName', reporterName);
+        formData.append('reporterGuid', reporterGuid);
+        formData.append("guid", guid);
+    
+        console.log('Submitting Report:', formData);
+    
+        try {
+            const newLaporan = await addReport(formData); // Call addReport with formData only
+            if (newLaporan) {
+                onSubmit(newLaporan);
+                setReportContent('');
+                setFile(null);
+                setLatitude(null);
+                setLongitude(null);
+                setType('');
+            } else {
+                throw new Error('Laporan tidak berhasil ditambahkan.');
+            }
+        } catch (err) {
+            console.error('Error adding report:', err);
+            setError(err.message || 'Terjadi kesalahan saat menambahkan laporan.');
+        } finally {
+            setLoading(false);
+            onClose();
+        }
+    };    
+    
     return (
-        <div
-            className={`fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-50 ${isOpen ? 'block' : 'hidden'}`}
-        >
+        <div className={`fixed inset-0 flex justify-center items-center z-50 bg-black bg-opacity-50 ${isOpen ? 'block' : 'hidden'}`}>
             <div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
                 <h2 className="text-2xl font-semibold text-white mb-4">Tambah Laporan Petugas</h2>
                 <form onSubmit={handleSubmit}>
@@ -84,21 +111,28 @@ const AddLaporanPetugas = ({ isOpen, onClose, onSubmit }) => {
                             required
                         />
                     </div>
-                    {/* <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-200">Tipe</label>
-                        <input
-                            type="text"
+                    <div className="mb-4">
+                        <label className="block text-gray-200">Tipe Laporan</label>
+                        <select
+                            className="w-full px-4 py-2 border border-gray-600 bg-gray-900 text-gray-100 rounded-md"
                             value={type}
-                            readOnly
-                            className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-gray-100 rounded-md"
-                        />
-                    </div> */}
+                            onChange={(e) => setType(e.target.value)}
+                        >
+                            <option value="">Pilih Tipe</option>
+                            <option value="Officer">Gajah Masuk</option>
+                            <option value="report-harian">Laporan Harian</option>
+                            <option value="report-kegiatan">Laporan Kegiatan</option>
+                            <option value="report-kendala">Kendala Lapangan</option>
+                        </select>
+                    </div>
+                    {error && <div className="text-red-500 mb-4">{error}</div>}
                     <div className="flex justify-end">
                         <button
                             type="submit"
                             className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 mr-2"
+                            disabled={loading}
                         >
-                            Kirim
+                            {loading ? 'Mengirim...' : 'Kirim'}
                         </button>
                         <button
                             type="button"

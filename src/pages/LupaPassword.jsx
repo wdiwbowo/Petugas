@@ -1,13 +1,27 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { forgotPassword } from "../services/apiservice"; // Import the API service
 
 export default function ForgotPassword() {
     const [email, setEmail] = useState("");
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
+    const navigate = useNavigate(); // Initialize useNavigate
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Simulasi proses pengiriman email reset password
-        alert(`Link reset password telah dikirim ke ${email}`);
+        try {
+            await forgotPassword(email); // Call the API service
+            setSuccess(`Link reset password telah dikirim ke ${email}`);
+            setError(null);
+            setTimeout(() => {
+                navigate('/login'); // Redirect to login page after 2 seconds
+            }, 2000);
+        } catch (err) {
+            setError("Failed to send reset link, please try again.");
+            setSuccess(null);
+        }
     };
 
     return (
@@ -18,6 +32,8 @@ export default function ForgotPassword() {
                         Lupa Password
                     </h1>
                     <form className="space-y-6" onSubmit={handleSubmit}>
+                        {success && <p className="text-green-400 text-sm">{success}</p>}
+                        {error && <p className="text-red-400 text-sm">{error}</p>}
                         <div>
                             <label
                                 htmlFor="email"
