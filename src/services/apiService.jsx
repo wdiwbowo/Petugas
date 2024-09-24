@@ -116,6 +116,7 @@ export const checkEmail = async (email) => {
 
 // Fungsi untuk pendaftaran
 export const register = (data) => {
+  data.guidAplication = guidAplication;
   return apiClient.post('/users/register', data, {
     headers: {
       'Content-Type': 'application/json',
