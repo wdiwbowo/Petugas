@@ -25,7 +25,6 @@ apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('userToken'); // Pastikan kunci token konsisten
     if (token) {
-      console.log('Token found in local storage:', token); // Log token
       config.headers.Authorization = `Bearer ${token}`;
     } else {
       console.warn('No token found in local storage');
@@ -92,11 +91,11 @@ export const login = async (email, password) => {
       password,
       guidAplication,
     });
-    console.log('Login response:', response.data); // Tambahkan log
+    // console.log('Login response:', response.data); // Tambahkan log
     const { token } = response.data;
     if (token) {
       localStorage.setItem('userToken', token); // Simpan token di localStorage
-      console.log('Token stored in local storage:', token); // Log token
+      // console.log('Token stored in local storage:', token); // Log token
     } 
     return response;
   } catch (error) {
@@ -138,7 +137,7 @@ export const getAllCompanies= async () => {
 // Fungsi logout
 export const logout = () => {
   localStorage.removeItem('userToken');
-  console.log('User logged out successfully. Token removed.');
+  // console.log('User logged out successfully. Token removed.');
 };
 
 // Fungsi untuk mengaktifkan akun dengan OTP
@@ -168,7 +167,7 @@ export const activateAccount = async (email, otp) => {
 export const getUserProfile = async () => {
     try {
       const response = await apiClient.get('/users/profile');
-      console.log('Response dari API Profile:', response.data); // Log data respons
+      // console.log('Response dari API Profile:', response.data); // Log data respons
       return response.data;
     } catch (error) {
       if (error.response) {
@@ -242,7 +241,7 @@ export const getUserProfile = async () => {
 
   export const addReport = async (formData) => {
     try {
-      console.log(formData);
+      // console.log(formData);
         const appToken = localStorage.getItem('appToken'); // Get the appToken from localStorage
         const response = await apiAdminFile.post('/reports/create', formData, {
             headers: {
@@ -271,7 +270,7 @@ export const getPetugasReports = async (queryParams) => {
         page: queryParams.page || 1 // Optional page number, default to 1
       },
     });
-    console.log('Get All Reports by Company Response:', response.data);
+    // console.log('Get All Reports by Company Response:', response.data);
     return response.data; // Assuming the response contains the data for the reports
   } catch (error) {
     console.error('Error fetching officer reports:', error);
