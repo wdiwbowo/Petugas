@@ -242,6 +242,7 @@ export const getUserProfile = async () => {
 
   export const addReport = async (formData) => {
     try {
+      console.log(formData);
         const appToken = localStorage.getItem('appToken'); // Get the appToken from localStorage
         const response = await apiAdminFile.post('/reports/create', formData, {
             headers: {
@@ -262,7 +263,7 @@ export const getPetugasReports = async (queryParams) => {
   try {
     const response = await apiAdminFile.get('/reports/officer', {
       params: {
-        companyGuid: queryParams.companyGuid, // GUID perusahaan
+        // companyGuid: queryParams.companyGuid, // GUID perusahaan
         type: queryParams.type, 
         startDate: queryParams.startDate, // Optional start date filter
         endDate: queryParams.endDate, // Optional end date filter

@@ -6,8 +6,8 @@ const AddPresensiModal = ({ isOpen, onClose, onSubmit }) => {
     const [file, setFile] = useState(null);
     const [latitude, setLatitude] = useState(''); // Initialize to empty string
     const [longitude, setLongitude] = useState(''); // Initialize to empty string
-    const type = "Presensi"; // Set type as Presensi
-    const companyGuid = "COMPANY-9a01d431-dfe6-48c2-ae5a-6d0177fd2e19-2024"; // Use your companyGuid
+    const type = "presensi"; 
+    // const companyGuid = "COMPANY-9a01d431-dfe6-48c2-ae5a-6d0177fd2e19-2024"; // Use your companyGuid
 
     // Function to get the user's current location
     const getCurrentLocation = () => {
@@ -33,7 +33,7 @@ const AddPresensiModal = ({ isOpen, onClose, onSubmit }) => {
             guid: uuidv4(),
             reportContent,
             type,
-            companyGuid,
+            // companyGuid,
             latitude,
             longitude,
             file,
