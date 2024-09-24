@@ -14,7 +14,6 @@ const isAuthenticated = !!localStorage.getItem('userToken'); // Contoh menggunak
 
 export const router = createBrowserRouter([
     { path: '/', element: <Login /> },
-    { path: '/login', element: <Login /> },
     { path: '/register', element: <Register /> },
     { path: '/lupaPassword', element: <LupaPassword /> },
     { path: '/activateAccountForm', element: <ActivateAccountForm /> },

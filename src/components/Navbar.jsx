@@ -6,10 +6,10 @@ export default function Navbar() {
   const navigate = useNavigate(); // Hook to programmatically navigate
 
   const handleLogout = () => {
-    localStorage.removeItem('userToken');
+    localStorage.clear();
     console.log('User logged out successfully. Token removed.');
     
-    navigate("/login");
+    navigate("/");
   };
   
 
