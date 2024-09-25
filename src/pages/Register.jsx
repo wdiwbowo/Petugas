@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
+import Swal from 'sweetalert2'; // Import sweetalert2
 import { register, getAllCompanies } from '../services/apiservice';
 
 export default function Register() {
@@ -18,8 +18,7 @@ export default function Register() {
                 const companyList = await getAllCompanies();
                 setCompanies(companyList);
             } catch (error) {
-                console.error('Failed to fetch companies:', error);
-                setErrorMessage('Gagal memuat data perusahaan.');
+                Swal.fire('Error', 'Gagal memuat data perusahaan.', 'error');
             }
         };
 
@@ -34,7 +33,7 @@ export default function Register() {
     const handleRegister = async (event) => {
         event.preventDefault();
         if (!termsAccepted) {
-            alert('Anda harus menyetujui syarat dan ketentuan.');
+            Swal.fire('Peringatan', 'Anda harus menyetujui syarat dan ketentuan.', 'warning');
             return;
         }
 
@@ -52,20 +51,24 @@ export default function Register() {
         try {
             const response = await register(data);
             if (response.data && response.data.success) {
-                setSuccessMessage('Registrasi berhasil! OTP akan dikirim ke email Anda.');
+                Swal.fire({
+                    title: 'Registrasi berhasil!',
+                    text: 'OTP akan dikirim ke email Anda.',
+                    icon: 'success',
+                    timer: 3000,
+                    showConfirmButton: false,
+                });
                 setTimeout(() => {
                     navigate('/activateaccountform');
                 }, 3000);
             } else {
-                setErrorMessage(response.data.message || 'Pendaftaran gagal, silakan coba lagi.');
+                Swal.fire('Error', response.data.message || 'Pendaftaran gagal, silakan coba lagi.', 'error');
             }
         } catch (error) {
             if (error.response) {
-                console.error('Error response dari API:', error.response.data);
-                setErrorMessage(error.response.data.message || 'Pendaftaran gagal, silakan coba lagi.');
+                Swal.fire('Error', error.response.data.message || 'Pendaftaran gagal, silakan coba lagi.', 'error');
             } else {
-                console.error('Error tanpa respons dari API:', error);
-                setErrorMessage('Pendaftaran gagal, silakan coba lagi.');
+                Swal.fire('Error', 'Pendaftaran gagal, silakan coba lagi.', 'error');
             }
         }
     };
@@ -87,7 +90,6 @@ export default function Register() {
                     </div>
                 )}
                 <form onSubmit={handleRegister}>
-                    {/* Institution select input */}
                     {/* Institution select input */}
                     <div>
                         <label htmlFor="institution" className="block mb-2 text-sm font-medium text-gray-200">

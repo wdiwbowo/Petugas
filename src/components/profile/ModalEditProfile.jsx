@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import InputMask from 'react-input-mask';
 import { updateUserProfile } from '../../services/apiservice';
+import Swal from 'sweetalert2';
 
 export default function ModalEditProfile({ isOpen, onClose, user, onUpdate }) {
   const [name, setName] = useState(user.name);
@@ -24,9 +25,24 @@ export default function ModalEditProfile({ isOpen, onClose, user, onUpdate }) {
       
       await updateUserProfile(updatedUser);
       onUpdate(updatedUser);  // Call the onUpdate function passed as a prop
+
+      // Show success message with SweetAlert
+      Swal.fire({
+        title: 'Berhasil!',
+        text: 'Profil berhasil diperbarui.',
+        icon: 'success',
+        confirmButtonText: 'OK',
+      });
+
       onClose();
     } catch (error) {
-      console.error("Failed to update profile:", error);
+      // Show error message with SweetAlert
+      Swal.fire({
+        title: 'Gagal!',
+        text: 'Gagal memperbarui profil. Silakan coba lagi.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
       setError('Failed to update profile. Please try again.');
     } finally {
       setLoading(false);

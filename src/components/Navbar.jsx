@@ -1,15 +1,41 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom"; // Import useNavigate for redirection
+import Swal from "sweetalert2"; // Import SweetAlert2
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate(); // Hook to programmatically navigate
 
   const handleLogout = () => {
-    localStorage.clear();  
-    navigate("/");
+    Swal.fire({
+      title: "Apakah Anda yakin?",
+      text: "Anda akan keluar dari akun.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Ya, keluar",
+      cancelButtonText: "Batal"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Menghapus token dari localStorage
+        localStorage.removeItem("appToken");
+        localStorage.removeItem("userToken");
+        localStorage.clear(); // Membersihkan seluruh localStorage
+
+        // Menampilkan notifikasi logout berhasil
+        Swal.fire({
+          icon: "success",
+          title: "Logout berhasil",
+          showConfirmButton: false,
+          timer: 1500
+        });
+
+        // Arahkan ke halaman login atau beranda setelah logout
+        navigate("/");
+      }
+    });
   };
-  
 
   return (
     <nav className="bg-gradient-to-b from-black via-gray-900 to-gray-800">

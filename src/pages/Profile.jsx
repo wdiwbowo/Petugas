@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { getUserProfile, updateUserProfile, updatePassword } from '../services/apiservice';
 import ModalEditProfile from '../components/profile/ModalEditProfile';
 import ModalUpdatePassword from '../components/profile/ModalUpdatePassword'; // Import the password modal
+import Swal from 'sweetalert2'; // Import SweetAlert
 
 export default function UserProfile() {
   const [user, setUser] = useState({
@@ -14,16 +15,24 @@ export default function UserProfile() {
     profileImage: ''
   });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false); // State for password modal
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserProfile = async () => {
+      const loadingAlert = Swal.fire({
+        title: 'Sedang Memuat...',
+        text: 'Harap tunggu...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+  
       try {
+        
         const userProfile = await getUserProfile();
         setUser({
           name: userProfile.data.user.name || "Unknown",
@@ -33,14 +42,19 @@ export default function UserProfile() {
           profileImage: userProfile.data.profileImage || "https://via.placeholder.com/150",
         });
       } catch (error) {
-        setError(error.message);
+        Swal.fire('Error', error.message, 'error');
+        if (error.message.includes('Unauthorized')) {
+          navigate('/login'); // Redirect to login page
+        }
       } finally {
+        Swal.close();
         setLoading(false);
       }
-    };
-
+    };    
+  
     fetchUserProfile();
   }, []);
+  
 
   const handleEditProfile = () => {
     setIsModalOpen(true);
@@ -64,26 +78,30 @@ export default function UserProfile() {
         address: response.address,
       }));
 
-      // Show success message
-      setShowSuccessMessage(true);
-
-      // Reload page after 2 seconds
-      setTimeout(() => {
-        setShowSuccessMessage(false);
-        window.location.reload();
-      }, 2000);
+      // Show success message using SweetAlert
+      Swal.fire({
+        icon: 'success',
+        title: 'Profil berhasil diperbarui!',
+        text: 'Perubahan profil Anda telah disimpan.',
+      });
 
       handleModalClose();
     } catch (error) {
-      console.error("Failed to update profile:", error.response ? error.response.data : error.message);
+      Swal.fire('Gagal memperbarui profil', error.response ? error.response.data : error.message, 'error');
     }
   };
 
   const handleUpdatePassword = async (currentPassword, newPassword) => {
     try {
       const response = await updatePassword(user.email, currentPassword, newPassword);
+      Swal.fire({
+        icon: 'success',
+        title: 'Password berhasil diperbarui!',
+        text: 'Silakan gunakan password baru Anda untuk masuk.',
+      });
       return response; // Return the response for handling in the modal
     } catch (error) {
+      Swal.fire('Error', error.message, 'error');
       return { success: false, message: error.message };
     }
   };
@@ -93,15 +111,8 @@ export default function UserProfile() {
   };
 
   if (loading) {
-    return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-700">
-            <div className="text-center">
-                <div className="loader mb-4 animate-spin rounded-full h-16 w-16 border-t-4 border-yellow-500"></div>
-                <p className="text-yellow-400 text-2xl font-bold">Sedang Memuat...</p>
-            </div>
-        </div>
-    );
-}
+    return null; 
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-gray-800 flex items-center justify-center">
@@ -139,13 +150,6 @@ export default function UserProfile() {
             <ChevronRightIcon className="w-5 h-5 ml-2" />
           </button>
         </div>
-
-        {/* Success message */}
-        {showSuccessMessage && (
-          <div className="mt-4 text-green-500 text-center">
-            Profil berhasil diperbarui!
-          </div>
-        )}
       </div>
       {isModalOpen && (
         <ModalEditProfile

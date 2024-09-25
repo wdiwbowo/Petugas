@@ -1,26 +1,32 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { forgotPassword } from "../services/apiservice"; // Import the API service
+import Swal from "sweetalert2"; // Import SweetAlert
 
 export default function ForgotPassword() {
     const [email, setEmail] = useState("");
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(null);
     const navigate = useNavigate(); // Initialize useNavigate
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         try {
             await forgotPassword(email); // Call the API service
-            setSuccess(`Link reset password telah dikirim ke ${email}`);
-            setError(null);
-            setTimeout(() => {
-                navigate('/login'); // Redirect to login page after 2 seconds
-            }, 2000);
+            Swal.fire({
+                icon: "success",
+                title: "Success!",
+                text: `Link reset password telah dikirim ke ${email}`,
+                timer: 2000,
+                timerProgressBar: true,
+                willClose: () => {
+                    navigate("/"); // Redirect to login page after closing the alert
+                },
+            });
         } catch (err) {
-            setError("Failed to send reset link, please try again.");
-            setSuccess(null);
+            Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: "Gagal mengirim link reset, silakan coba lagi.",
+            });
         }
     };
 
@@ -32,8 +38,6 @@ export default function ForgotPassword() {
                         Lupa Password
                     </h1>
                     <form className="space-y-6" onSubmit={handleSubmit}>
-                        {success && <p className="text-green-400 text-sm">{success}</p>}
-                        {error && <p className="text-red-400 text-sm">{error}</p>}
                         <div>
                             <label
                                 htmlFor="email"
@@ -61,7 +65,7 @@ export default function ForgotPassword() {
                     </form>
                     <div className="mt-6 text-center">
                         <a
-                            href="/login"
+                            href="/"
                             className="text-sm text-yellow-400 hover:underline"
                         >
                             Kembali ke Login

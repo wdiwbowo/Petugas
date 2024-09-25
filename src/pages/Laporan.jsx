@@ -1,102 +1,84 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-import AddLaporanPetugas from '../components/laporan/addLaporanPetugas';
+import AddLaporanPetugas from '../components/laporan/AddLaporanPetugas';
 import { getPetugasReports, addReport } from '../services/apiservice';
+import Swal from 'sweetalert2';
 
 const Laporan = () => {
     const [laporanData, setLaporanData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filterText, setFilterText] = useState('');
-    const [filterType, setFilterType] = useState('');
+    const [filterType, setFilterType] = useState('report-harian'); // Set default type to 'report-harian'
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(5);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [error, setError] = useState(null);
     const [totalItems, setTotalItems] = useState(0);
-    const [successMessage, setSuccessMessage] = useState(''); // State for success message
+    const [successMessage, setSuccessMessage] = useState('');
 
     const queryParams = {
-        // companyGuid: "COMPANY-9a01d431-dfe6-48c2-ae5a-6d0177fd2e19-2024",
-        type: filterType,
+        companyGuid: "COMPANY-9a01d431-dfe6-48c2-ae5a-6d0177fd2e19-2024",
+        type: ['Officer', 'report-harian', 'report-kegiatan', 'report-kendala'].includes(filterType)
+            ? filterType
+            : 'report-harian', // Default to 'report-harian' if filterType is invalid
         page: currentPage,
         limit: itemsPerPage,
     };
 
     useEffect(() => {
         const fetchLaporanData = async () => {
+            setLoading(true);
+            Swal.showLoading();
+
             try {
                 const response = await getPetugasReports(queryParams);
 
                 if (response && response.success && response.data) {
                     setLaporanData(response.data.data || []);
                     setTotalItems(response.data.totalItems || 0);
+                    Swal.fire('Success', 'Data laporan berhasil diambil.', 'success');
                 } else {
-                    setError('Data laporan tidak ditemukan atau respons gagal.');
+                    Swal.fire('Error', 'Data laporan tidak ditemukan atau respons gagal.', 'error');
                 }
             } catch (error) {
-                console.error('Error fetching laporan:', error);
-                setError('Gagal mengambil data laporan.');
+                Swal.fire('Error', 'Gagal mengambil data laporan.', 'error');
             } finally {
                 setLoading(false);
+                Swal.close();
             }
         };
 
         fetchLaporanData();
     }, [filterType, currentPage]);
 
-    const currentItems = laporanData;
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-    const handlePageChange = (newPage) => {
-        if (newPage >= 1 && newPage <= totalPages) {
-            setCurrentPage(newPage);
-        }
-    };
-
     const handleAdd = () => setIsModalOpen(true);
     const handleModalClose = () => setIsModalOpen(false);
 
     const handleAddLaporanSubmit = async (newLaporan) => {
-        // console.log(newLaporan);
+        Swal.showLoading();
         try {
             const response = await addReport(newLaporan);
             if (response && response.success) {
-                // console.log('Laporan berhasil ditambahkan:', response.data);
                 setLaporanData((prevData) => [...prevData, response.data]);
                 setSuccessMessage('Laporan berhasil ditambahkan!');
-    
-                setTimeout(() => {
+                Swal.fire({
+                    title: 'Success',
+                    text: 'Laporan berhasil ditambahkan!',
+                    icon: 'success',
+                }).then(() => {
                     setSuccessMessage('');
-                    setIsModalOpen(false); // Close modal after success
-                    setCurrentPage(1); // Reset to first page to reflect new entry
-                }, 3000);
+                    setIsModalOpen(false);
+                    setCurrentPage(1); // Reload data setelah pengguna mengklik OK
+                });
             } else {
-                console.error('Gagal menambahkan laporan:', response.message);
+                Swal.fire('Error', response.message || 'Gagal menambahkan laporan.', 'error');
             }
         } catch (error) {
-            console.error('Error saat menambahkan laporan:', error);
+            Swal.fire('Error', 'Error saat menambahkan laporan.', 'error');
+        } finally {
+            Swal.close();
         }
-    };    
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-700">
-                <div className="text-center">
-                    <div className="loader mb-4 animate-spin rounded-full h-16 w-16 border-t-4 border-yellow-500"></div>
-                    <p className="text-yellow-400 text-2xl font-bold">Sedang Memuat...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="flex items-center justify-center min-h-screen bg-gray-700">
-                <p className="text-red-400 text-2xl font-bold">{error}</p>
-            </div>
-        );
-    }
+    };
 
     return (
         <div className="flex flex-col min-h-screen bg-gradient-to-b from-black via-gray-900 to-gray-800">
@@ -130,11 +112,13 @@ const Laporan = () => {
                         />
                         <select
                             value={filterType}
-                            onChange={(e) => setFilterType(e.target.value)} // Correct state variable
+                            onChange={(e) => {
+                                setFilterType(e.target.value);
+                                setCurrentPage(1);
+                            }}
                             className="w-1/3 px-4 py-2 rounded-lg bg-gray-700 text-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-500"
                         >
-                            <option value="">All Types</option>
-                            <option value="Officer">Gajah Masuk</option>
+                            <option value="Officer">Officer</option>
                             <option value="report-harian">Report Harian</option>
                             <option value="report-kegiatan">Report Kegiatan</option>
                             <option value="report-kendala">Report Kendala</option>
@@ -149,12 +133,12 @@ const Laporan = () => {
                                     <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Reporter Name</th>
                                     <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Report Content</th>
                                     <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Img</th>
-                                    {/* <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th> */}
+                                    <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-gray-800 divide-y divide-gray-700">
-                                {currentItems && currentItems.length > 0 ? (
-                                    currentItems.map((item, index) => (
+                                {laporanData.length > 0 ? (
+                                    laporanData.map((item, index) => (
                                         <tr key={index}>
                                             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-100">{index + 1}</td>
                                             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-100">{item?.reporterName || 'Nama tidak tersedia'}</td>
@@ -170,39 +154,57 @@ const Laporan = () => {
                                                     <span>No Image Available</span>
                                                 )}
                                             </td>
-                                            {/* <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-100 text-sm text-gray-400 flex items-center space-x-2">
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-100 flex items-center space-x-2">
                                                 <button
-                                                    onClick={() => handleEdit(item?._id)}
+                                                    onClick={() => Swal.fire('Edit', 'Edit feature belum diimplementasikan', 'info')}
                                                     className="bg-blue-500 hover:bg-blue-600 text-white font-bold p-2 rounded"
                                                 >
                                                     <PencilIcon className="h-5 w-5" />
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDelete(item?._id)}
+                                                    onClick={() => Swal.fire('Delete', 'Delete feature belum diimplementasikan', 'info')}
                                                     className="bg-red-500 hover:bg-red-600 text-white font-bold p-2 rounded"
                                                 >
                                                     <TrashIcon className="h-5 w-5" />
                                                 </button>
-                                            </td> */}
+                                            </td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="5" className="px-4 py-4 text-center text-sm text-gray-400">Tidak ada data laporan yang tersedia.</td>
+                                        <td colSpan="5" className="px-4 py-4 text-sm text-gray-300 text-center">Tidak ada laporan yang ditemukan</td>
                                     </tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
 
-                    <div className="flex justify-between px-6 pb-6">
-                        <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="bg-gray-600 text-white py-2 px-4 rounded-lg disabled:opacity-50">Previous</button>
-                        <span className="text-white">Page {currentPage} of {totalPages}</span>
-                        <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="bg-gray-600 text-white py-2 px-4 rounded-lg disabled:opacity-50">Next</button>
+                    <div className="flex justify-between px-6 mb-4">
+                        <button
+                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                            className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+                        >
+                            Previous
+                        </button>
+                        <button
+                            onClick={() => setCurrentPage((prev) => prev + 1)}
+                            disabled={currentPage >= Math.ceil(totalItems / itemsPerPage)}
+                            className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+                        >
+                            Next
+                        </button>
                     </div>
                 </div>
             </main>
-            {isModalOpen && <AddLaporanPetugas isOpen={isModalOpen} onSubmit={handleAddLaporanSubmit} onClose={handleModalClose} />}
+
+            {isModalOpen && (
+                <AddLaporanPetugas
+                    isOpen={isModalOpen}
+                    onClose={handleModalClose}
+                    onSubmit={handleAddLaporanSubmit}
+                />
+            )}
         </div>
     );
 };

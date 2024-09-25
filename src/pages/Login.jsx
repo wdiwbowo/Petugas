@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../services/apiservice"; // Adjust the import path as necessary
+import Swal from 'sweetalert2';
 
 export default function Login() {
     const [passwordVisible, setPasswordVisible] = useState(false);
@@ -27,18 +28,40 @@ export default function Login() {
                 if (keepLoggedIn) {
                     localStorage.setItem('keepLoggedIn', 'true');
                 }
-                navigate("/laporan");
+    
+                // Tampilkan pesan sukses menggunakan SweetAlert2
+                Swal.fire({
+                    title: 'Login Berhasil!',
+                    text: 'Anda akan dialihkan ke halaman laporan.',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                }).then(() => {
+                    navigate("/laporan");
+                });
             } else {
-                setErrorMessage('Login gagal. Periksa kembali kredensial Anda.');
+                // Tampilkan pesan gagal
+                Swal.fire({
+                    title: 'Login Gagal',
+                    text: 'Periksa kembali kredensial Anda.',
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                });
             }
         } catch (error) {
+            let errorMessage = 'Terjadi kesalahan. Silakan coba lagi.';
             if (error.response) {
-                setErrorMessage(error.response.data.message || 'Login gagal. Silakan coba lagi.');
+                errorMessage = error.response.data.message || 'Login gagal. Silakan coba lagi.';
             } else if (error.request) {
-                setErrorMessage('Tidak ada respons dari server. Silakan coba lagi nanti.');
-            } else {
-                setErrorMessage('Terjadi kesalahan. Silakan coba lagi.');
+                errorMessage = 'Tidak ada respons dari server. Silakan coba lagi nanti.';
             }
+    
+            // Tampilkan pesan error menggunakan SweetAlert2
+            Swal.fire({
+                title: 'Error',
+                text: errorMessage,
+                icon: 'error',
+                confirmButtonText: 'OK',
+            });
         }
     };
 
@@ -50,12 +73,7 @@ export default function Login() {
                 </h1>
                 <form className="space-y-6" onSubmit={handleLogin}>
                     <div>
-                        <label
-                            htmlFor="email"
-                            className="block text-sm font-medium text-gray-200 mb-2"
-                        >
-                            Email
-                        </label>
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-2">Email</label>
                         <input
                             type="email"
                             id="email"
@@ -67,12 +85,7 @@ export default function Login() {
                         />
                     </div>
                     <div>
-                        <label
-                            htmlFor="password"
-                            className="block text-sm font-medium text-gray-200 mb-2"
-                        >
-                            Password
-                        </label>
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-200 mb-2">Password</label>
                         <div className="relative">
                             <input
                                 type={passwordVisible ? "text" : "password"}
@@ -94,7 +107,7 @@ export default function Login() {
                                     </svg>
                                 ) : (
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3a9 9 0 00-9 9 9 9 0018 0 9 9 0 00-9-9zM12 12a2 2 0 100-4 2 2 0 000 4z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3a9 9 0 00-9 9 9 9 0 0018 0 9 9 0 00-9-9zM12 12a2 2 0 100-4 2 2 0 000 4z" />
                                     </svg>
                                 )}
                             </button>
@@ -125,17 +138,13 @@ export default function Login() {
                 )}
 
                 <div className="text-center mt-4">
-                    <a href="/lupaPassword" className="text-sm text-yellow-400 hover:underline">
-                        Lupa kata sandi?
-                    </a>
+                    <a href="/lupaPassword" className="text-sm text-yellow-400 hover:underline">Lupa kata sandi?</a>
                 </div>
 
                 <div className="mt-8 text-center">
                     <p className="text-sm text-gray-300">
                         Belum punya akun?{" "}
-                        <a href="/register" className="text-yellow-400 hover:underline font-semibold">
-                            Buat akun baru
-                        </a>
+                        <a href="/register" className="text-yellow-400 hover:underline font-semibold">Buat akun baru</a>
                     </p>
                 </div>
             </div>

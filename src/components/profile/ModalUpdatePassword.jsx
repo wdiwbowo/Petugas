@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Swal from 'sweetalert2';
 
 export default function ModalUpdatePassword({ isOpen, onClose, onUpdate }) {
     const [currentPassword, setCurrentPassword] = useState('');
@@ -11,10 +12,23 @@ export default function ModalUpdatePassword({ isOpen, onClose, onUpdate }) {
 
         const response = await onUpdate(currentPassword, newPassword);
         if (response.success) {
-            alert(response.message);
+            // Show success message with SweetAlert
+            Swal.fire({
+                title: 'Berhasil!',
+                text: response.message,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
             onClose(); // Close the modal on success
         } else {
+            // Show error message with SweetAlert
             setError(response.message);
+            Swal.fire({
+                title: 'Gagal!',
+                text: response.message,
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
         }
     };
 

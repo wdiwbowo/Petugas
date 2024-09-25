@@ -1,27 +1,40 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {activateAccount} from '../services/apiservice'; // Sesuaikan path
+import { activateAccount } from '../services/apiservice'; // Sesuaikan path
+import Swal from 'sweetalert2'; // Import SweetAlert
 
 const ActivateAccount = () => {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
-  const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
   const handleActivate = async () => {
     try {
       const result = await activateAccount(email, otp);
       if (result.success) {
-        setMessage('Akun Anda sudah aktif. Mengarahkan ke halaman login...');
-        // Redirect ke halaman login setelah 2 detik
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000);
+        Swal.fire({
+          icon: 'success',
+          title: 'Akun Anda sudah aktif!',
+          text: 'Mengarahkan ke halaman login...',
+          timer: 2000,
+          timerProgressBar: true,
+          willClose: () => {
+            navigate('/'); // Redirect ke halaman login setelah 2 detik
+          }
+        });
       } else {
-        setMessage('Gagal mengaktifkan akun. Cek OTP Anda.');
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal!',
+          text: 'Cek OTP Anda.',
+        });
       }
     } catch (error) {
-      setMessage('Terjadi kesalahan. Coba lagi.');
+      Swal.fire({
+        icon: 'error',
+        title: 'Terjadi kesalahan!',
+        text: 'Coba lagi.',
+      });
     }
   };
 
@@ -35,36 +48,29 @@ const ActivateAccount = () => {
           <p className="text-center text-gray-300 mb-6">
             Masukkan OTP untuk mengaktifkan akun Anda.
           </p>
-          {message && (
-            <div className="mb-4 p-4 text-center rounded-lg">
-              <p className={message.includes('Gagal') ? 'text-red-500' : 'text-green-500'}>
-                {message}
-              </p>
-            </div>
-          )}
           <form onSubmit={(e) => { e.preventDefault(); handleActivate(); }} className="space-y-6">
             <div className="relative">
-            <label htmlFor="email" className="block mb-1 text-sm font-medium text-gray-200">
-                                Email
-                            </label>
+              <label htmlFor="email" className="block mb-1 text-sm font-medium text-gray-200">
+                Email
+              </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder=" Email"
+                placeholder="Email"
                 className="block w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:ring-yellow-400 focus:border-yellow-400 peer"
                 required
               />
             </div>
             <div className="relative">
-            <label htmlFor="otp" className="block mb-1 text-sm font-medium text-gray-200">
-                                Otp
-                            </label>
+              <label htmlFor="otp" className="block mb-1 text-sm font-medium text-gray-200">
+                Otp
+              </label>
               <input
                 type="text"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                placeholder="Otp "
+                placeholder="Otp"
                 className="block w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 focus:ring-yellow-400 focus:border-yellow-400 peer"
                 required
               />
