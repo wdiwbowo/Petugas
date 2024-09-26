@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
-import AddLaporanPetugas from '../components/laporan/AddLaporanPetugas';
 import { getPetugasReports, addReport } from '../services/apiservice';
+import AddLaporanPetugas from '../components/laporan/AddLaporanPetugas';
 import Swal from 'sweetalert2';
 
 const Laporan = () => {
@@ -19,7 +19,11 @@ const Laporan = () => {
     const queryParams = {
         companyGuid: "COMPANY-9a01d431-dfe6-48c2-ae5a-6d0177fd2e19-2024",
         type: ['Officer', 'report-harian', 'report-kegiatan', 'report-kendala'].includes(filterType)
+<<<<<<< HEAD
             ? filterType
+=======
+            ? filtaerType
+>>>>>>> 0a9c967 (new)
             : 'report-harian', // Default to 'report-harian' if filterType is invalid
         page: currentPage,
         limit: itemsPerPage,
